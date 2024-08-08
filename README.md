@@ -2,7 +2,7 @@
 
 ## Something New
 
-1. A new API `load_func_print` in the [init.py](src/python/bcc/__init__py) for printing verifier log: `load_func_print` is similar to `load_func` but passing the user-defined `log_buf` as parameters, so that when eBPF verifier outputs debugging info, `log_buf` can record all messages.
+1. A new API `load_func_print` in the [init.py](src/python/bcc/__init__.py#L503) for printing verifier log: `load_func_print` is similar to `load_func` but passing the user-defined `log_buf` as parameters, so that when eBPF verifier outputs debugging info, `log_buf` can record all messages.
 
 ```python
 def load_func_print(self, func_name, prog_type, log_buf, device = None, attach_type = -1)
