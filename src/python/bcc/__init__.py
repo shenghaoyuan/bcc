@@ -500,6 +500,35 @@ class BPF(object):
 
         return fns
 
+    def load_func_print(self, func_name, prog_type, log_buf, device = None, attach_type = -1):
+        func_name = _assert_is_bytes(func_name)
+        if func_name in self.funcs:
+            return self.funcs[func_name]
+        if not lib.bpf_function_start(self.module, func_name):
+            raise Exception("Unknown program %s" % func_name)
+            
+        log_level = 2
+        fd = lib.bcc_func_load(self.module, prog_type, func_name,
+                lib.bpf_function_start(self.module, func_name),
+                lib.bpf_function_size(self.module, func_name),
+                lib.bpf_module_license(self.module),
+                lib.bpf_module_kern_version(self.module),
+                log_level, log_buf, ct.sizeof(log_buf), device, attach_type)
+
+        if fd < 0:
+            atexit.register(self.donothing)
+            if ct.get_errno() == errno.EPERM:
+                raise Exception("Need super-user privileges to run")
+
+            errstr = os.strerror(ct.get_errno())
+            raise Exception("Failed to load BPF program %s: %s" %
+                            (func_name, errstr))
+
+        fn = BPF.Function(self, func_name, fd)
+        self.funcs[func_name] = fn
+
+        return fn
+
     def load_func(self, func_name, prog_type, device = None, attach_type = -1):
         func_name = _assert_is_bytes(func_name)
         if func_name in self.funcs:
